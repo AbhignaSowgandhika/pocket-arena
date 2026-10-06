@@ -128,6 +128,7 @@ tell Claude. Its role sets its stats; see `ROLE_STATS` in `arena/settings.py`.
 ## Known issues and ideas
 
 * Bots don't use bushes on purpose yet.
-* Every character uses Glum's two moves until it gets its own (Wednesday).
+* Name tags and damage numbers overlap when several characters crowd together.
+* Potas is dark green on dark backgrounds, so it's hard to see on the start screen (fitting for camouflage, but worth a look).
 * No sound yet.
 * Balance numbers are first guesses and will change after you playtest.
