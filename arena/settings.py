@@ -30,9 +30,9 @@ TEAM_NAME = {BLUE: "Blue", RED: "Red"}
 # range: basic attack reach in pixels
 ROLE_STATS = {
     "All-rounder": dict(hp=700, atk=46, speed=180, range=135),
-    "Attacker":    dict(hp=560, atk=58, speed=172, range=175),
+    "Attacker":    dict(hp=560, atk=56, speed=192, range=170),
     "Speedster":   dict(hp=600, atk=50, speed=210, range=120),
-    "Defender":    dict(hp=900, atk=36, speed=165, range=115),
+    "Defender":    dict(hp=900, atk=42, speed=170, range=125),
     "Supporter":   dict(hp=640, atk=38, speed=178, range=150),
 }
 HP_PER_LEVEL = 0.12          # +12% of base HP each level

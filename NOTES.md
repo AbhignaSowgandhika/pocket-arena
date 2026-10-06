@@ -43,8 +43,8 @@ of the progress log.
 
 | Drawing | Type | In the game |
 |---|---|---|
-| **Beat** | Character, Attacker | 560 HP, 58 attack, longest reach. **Q Heart Toss:** a fast heart that breaks on the first thing it hits and steals up to 8 energy. **E Pulse Rush** (level 3): dash 260 px toward the cursor, then 25% faster for 2 s. Bots use it to escape too. |
-| **Potas** | Character, Defender | 900 HP, 36 attack. **Q Vine Lash:** a 320 px vine that hits everything in a line and slows it. **E Root Guard** (level 3): for 4 s takes 40% less damage and moves slower, and thorns hit enemies within 150 px twice a second. **Passive Camouflage:** after standing still 1.2 s, enemies can't see Potas unless they come close. |
+| **Beat** | Character, Attacker | 560 HP, 56 attack, longest reach and fastest walker (192 vs 180 for Glum). **Q Heart Toss:** a fast heart that breaks on the first thing it hits and steals up to 8 energy. **E Pulse Rush** (level 3): dash 260 px toward the cursor, then 25% faster for 2 s. Bots use it to escape too. |
+| **Potas** | Character, Defender | 900 HP, 42 attack. **Q Vine Lash:** a 320 px vine that hits everything in a line and slows it. **E Root Guard** (level 3): for 4 s takes 40% less damage and moves slower, and thorns hit enemies within 150 px twice a second. **Passive Camouflage:** after standing still 1.2 s, enemies can't see Potas unless they come close. |
 | **Glum** | Character, All-rounder | 700 HP, 46 attack. **Q Thunderbolt:** lightning lands at your mouse after 0.45s and hits everything in the circle. **E Gloom Trail** (level 3): 30% faster for 3.5s and drops puddles that slow enemies by 45% and slowly damage them. |
 | **Sunshine** | Wild creature | Gives 12 energy and 45 XP. Respawns after 18s. 11 camps on the map. |
 | **Moonshine** | Wild creature | Heals whoever defeats it by 40% of their max HP, plus 4 energy and 55 XP. Respawns after 24s. 2 camps, one near each base. |
@@ -93,9 +93,11 @@ tell Claude. Its role sets its stats; see `ROLE_STATS` in `arena/settings.py`.
   Camouflaged Potas shows see-through to you and is invisible to enemies.
 * Added **Arena Sprite Studio** to the repo (`studio/`) with **Save sprite file** and
   **Open sprite file**, so it works without Claude too.
-* Testing: 6 bot-vs-bot matches came out even on average (328 to 326). Over 12 matches per
-  character: Beat scores the most (123 per game) but is defeated most often, Potas scores
-  the least (100) but is defeated least, and Glum is in between. That fits their roles.
+* Made Beat faster, as you described ("high speed"), then rebalanced because speed made it
+  too strong (144 points per game against Potas's 80).
+* Testing over 12 matches per character: points per game are Glum 125, Beat 116, Potas 108.
+  Beat is defeated most often (6.3 per game) and Potas least (3.6), which fits an attacker
+  and a defender. Potas gets the most knockouts thanks to Root Guard.
 
 ### Mon, Oct 5 – v0.1
 * Started over. Moved the old version off the Desktop into `old_pocket_arena/`.

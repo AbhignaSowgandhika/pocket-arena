@@ -77,7 +77,7 @@ arena/
   settings.py        every tunable number (match length, stats, colors)
   world.py           the map: walls, bushes, goals, path finding
   entities.py        characters, wild creatures, orbs, puddles
-  abilities.py       special moves (Thunderbolt, Gloom Trail)
+  abilities.py       special moves for each character
   ai.py              how the bots decide what to do
   game.py            the rules: damage, scoring, leveling, respawning
   render.py          drawing everything, including the HUD
