@@ -6,6 +6,9 @@ on:
   push:
   workflow_dispatch:
 
+permissions:
+  contents: write     # lets the job save screenshots to the "screenshots" branch
+
 jobs:
   play:
     runs-on: ubuntu-latest
@@ -24,3 +27,15 @@ jobs:
         with:
           name: screenshots
           path: screenshots/
+      - name: Save screenshots to the "screenshots" branch
+        if: github.ref == 'refs/heads/main'
+        run: |
+          cd screenshots
+          git init -q -b screenshots
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          printf "# Screenshots\n\nTaken automatically from commit ${GITHUB_SHA::7}.\n\n" > README.md
+          for f in *.png; do printf "### $f\n![$f]($f)\n\n" >> README.md; done
+          git add -A
+          git commit -q -m "Screenshots for ${GITHUB_SHA::7}"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" screenshots

@@ -70,8 +70,8 @@ tell Claude. Its role sets its stats; see `ROLE_STATS` in `arena/settings.py`.
   roughly even.
 * GitHub runs `.github/workflows/check.yml` on every push. It installs pygame,
   runs the simulation, then plays a match with a hidden window and saves
-  screenshots. To see them, open the repo's **Actions** tab, click the latest run,
-  and look under **Artifacts**.
+  screenshots. To see them, switch to the **screenshots** branch on GitHub
+  (branch menu at the top left of the repo page) and open its README.
 * What only you can check: how it **feels** to play (controls, speed,
   difficulty) and how it looks on your screen.
 
