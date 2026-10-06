@@ -1,0 +1,26 @@
+# Runs automatically on every push: plays matches with no window and saves
+# screenshots, so we know the game still works. Results: the "Actions" tab.
+name: check-game
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  play:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install pygame
+        run: pip install -r requirements.txt
+      - name: Simulate 4 matches (rules only)
+        run: python tools/simulate.py 4
+      - name: Play a match and take screenshots
+        run: python tools/screenshots.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: screenshots/
