@@ -19,7 +19,7 @@ MATCH_SECONDS = 5 * 60
 FINAL_STRETCH = 60          # last N seconds: every point counts double
 MAX_ENERGY = 50             # most energy one character can carry
 MAX_LEVEL = 10
-SPRITE_SCALE = 2            # 32px drawings are shown at 64px
+SPRITE_SCALE = 3            # 32px drawings are shown at 96px
 
 # ----- teams ------------------------------------------------------------------
 BLUE, RED = 0, 1
@@ -61,7 +61,7 @@ SCORE_BASE_TIME = 0.5        # seconds to score...
 SCORE_TIME_PER_ENERGY = 0.04  # ...plus this much per energy carried (50 -> 2.5 s)
 
 # ----- respawn and healing ----------------------------------------------------
-BASE_RADIUS = 150
+BASE_RADIUS = 130
 BASE_HEAL = 0.30             # fraction of max HP per second at your base
 GOAL_HEAL = 0.06             # standing in your own goal heals a little
 RESPAWN_BASE = 4.0

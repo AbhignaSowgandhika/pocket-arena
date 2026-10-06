@@ -51,7 +51,7 @@ class Game:
         for team in (S.BLUE, S.RED):
             base = self.world.bases[team]
             for i in range(3):
-                spawn = base + V(0, (i - 1) * 60)
+                spawn = base + V(0, (i - 1) * 90)
                 if team == S.BLUE and i == 1:
                     sprite_id, name, is_player = self.player_sprite, "You", True
                 else:

@@ -104,7 +104,7 @@ class World:
         for team, fx in ((BLUE, lambda x: x), (RED, mirror)):
             self.goals.append(Goal(team, (fx(560), 250), OUTER_GOAL_POINTS))
             self.goals.append(Goal(team, (fx(560), H - 250), OUTER_GOAL_POINTS))
-            self.goals.append(Goal(team, (fx(270), mid), INNER_GOAL_POINTS, inner=True))
+            self.goals.append(Goal(team, (fx(400), mid), INNER_GOAL_POINTS, inner=True))
 
         # (kind, position) for every wild creature camp
         self.wild_spots = []

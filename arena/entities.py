@@ -33,7 +33,7 @@ class Controls:
 
 
 class Unit:
-    radius = 24
+    radius = 28
 
     def __init__(self, name, team, sprite_id, role, kit, spawn, is_player=False):
         self.name = name

@@ -306,10 +306,10 @@ class Renderer:
         me = game.player
         bob = -abs(math.sin(u.walk_time * 10)) * 4 if u.moving else math.sin(self.clock * 2.5 + u.spawn.y) * 1.5
         ring = S.PLAYER_GREEN if u is me else S.TEAM_COLOR[u.team]
-        self.shadow((c[0], c[1] + 14), 54, 16)
-        pygame.draw.ellipse(self.screen, ring, (c[0] - 30, c[1] + 4, 60, 22), 3)
+        self.shadow((c[0], c[1] + 15), 66, 18)
+        pygame.draw.ellipse(self.screen, ring, (c[0] - 36, c[1] + 3, 72, 26), 3)
         if u.gloom_timer > 0:
-            pygame.draw.ellipse(self.screen, S.GLOOM, (c[0] - 34, c[1] + 1, 68, 28), 3)
+            pygame.draw.ellipse(self.screen, S.GLOOM, (c[0] - 41, c[1], 82, 32), 3)
         alpha = 150 if u.bush is not None else 255
         self.tops[id(u)] = self.blit_sprite(u.sprite_id, (c[0], c[1] + 16), flip=u.facing_left,
                                   flash=u.flash > 0, alpha=alpha, bob=bob)

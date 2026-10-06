@@ -221,7 +221,7 @@ Your drawings are stored like this:
 
 Each letter is a color from the palette and `.` is transparent.
 `sprites.py` reads this and paints one pixel per letter, then scales the image
-up 2× so each pixel becomes a 2×2 block. That's what keeps the pixel-art look
+up 3× so each pixel becomes a 3×3 block. That's what keeps the pixel-art look
 sharp.
 
 ---

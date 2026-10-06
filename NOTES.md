@@ -98,6 +98,10 @@ tell Claude. Its role sets its stats; see `ROLE_STATS` in `arena/settings.py`.
     energy".
   * Start screen with controls, pause menu and a results screen.
 * Simulated 8 bot-vs-bot matches: no crashes, average score 331 to 348.
+* First real-pygame check on GitHub passed. Fixes from its screenshots:
+  characters drawn 50% bigger, inner goals moved out of the bases, and more
+  space between characters at spawn so name tags don't overlap.
+* Re-simulated 6 matches: 3 wins each, average score 354 to 354.
 
 ## Known issues and ideas
 
