@@ -70,6 +70,7 @@ RESPAWN_PER_LEVEL = 0.7
 # ----- bushes -----------------------------------------------------------------
 BUSH_REVEAL_DISTANCE = 150   # enemies this close can see into your bush
 REVEAL_AFTER_ATTACK = 1.0    # attacking from a bush shows you for 1 second
+CAMOUFLAGE_TIME = 1.2        # Potas vanishes after standing still this long
 
 # ----- colors -----------------------------------------------------------------
 WHITE = (245, 245, 250)

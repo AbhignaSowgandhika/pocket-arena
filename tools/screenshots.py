@@ -35,12 +35,18 @@ def main():
     renderer = Renderer(screen, SpriteBank(sprites))
     dt = 1 / 30
 
-    renderer.draw(game, dt)
-    pygame.image.save(screen, os.path.join(OUT, "01_start_screen.png"))
+    for sprite_id in game.characters:              # one start screen per character
+        game.player_sprite = sprite_id
+        game.reset()
+        renderer.draw(game, dt)
+        pygame.image.save(screen, os.path.join(OUT, f"01_start_{sprite_id}.png"))
+    game.player_sprite = "potas" if "potas" in game.characters else game.characters[0]
+    game.reset()
 
     game.state = "playing"
     pilot = Brain("bottom")
-    shots = {3: "02_first_seconds", 45: "03_lane", 120: "04_mid_match", 200: "05_later", 265: "06_final_stretch"}
+    shots = {3: "02_first_seconds", 30: "03_lane", 60: "04_one_minute", 100: "05_mid_match",
+             150: "06_half_time", 200: "07_later", 265: "08_final_stretch"}
     frame, saved = 0, set()
     while game.state == "playing":
         game.update(dt, pilot.update(game.player, game, dt))
@@ -51,10 +57,7 @@ def main():
             saved.add(elapsed)
             pygame.image.save(screen, os.path.join(OUT, shots[elapsed] + ".png"))
     renderer.draw(game, dt)
-    pygame.image.save(screen, os.path.join(OUT, "07_results.png"))
-    game.state = "paused"
-    renderer.draw(game, dt)
-    pygame.image.save(screen, os.path.join(OUT, "08_paused.png"))
+    pygame.image.save(screen, os.path.join(OUT, "09_results.png"))
     print("final score", game.scores, "- screenshots saved to", os.path.abspath(OUT))
 
 

@@ -6,6 +6,7 @@ entities.py - the things that live on the map.
     Wild       - a wild creature that drops energy when defeated
     Orb        - loose energy lying on the ground
     Strike     - a thunderbolt that is about to land
+    Projectile - something thrown, like Beat's hearts
     Puddle     - Glum's gloomy residue that slows enemies
     Effect / FloatText - short-lived visuals (sparks, numbers)
 
@@ -35,7 +36,7 @@ class Controls:
 class Unit:
     radius = 28
 
-    def __init__(self, name, team, sprite_id, role, kit, spawn, is_player=False):
+    def __init__(self, name, team, sprite_id, role, kit, spawn, is_player=False, passive=None):
         self.name = name
         self.team = team
         self.sprite_id = sprite_id
@@ -43,6 +44,7 @@ class Unit:
         self.base = ROLE_STATS[self.role]
         self.kit = kit                              # list of Ability objects
         self.cooldowns = {a.key: 0.0 for a in kit}
+        self.passive = passive                      # e.g. "camouflage" for Potas
         self.spawn = V(spawn)
         self.pos = V(spawn)
         self.is_player = is_player
@@ -67,6 +69,12 @@ class Unit:
         self.gloom_timer = 0.0     # >0 while Gloom Trail is active
         self.puddle_drop = 0.0
         self.gloom_damage = 0.0    # puddle damage saved up until it's worth showing
+        self.dash_timer = 0.0      # >0 while dashing (Pulse Rush)
+        self.dash_vel = V()
+        self.haste_timer = 0.0     # >0 = moving faster after a dash
+        self.guard_timer = 0.0     # >0 while Root Guard is active
+        self.guard_tick = 0.0
+        self.still_time = 0.0      # seconds since this unit last moved (camouflage)
         self.reveal_timer = 0.0    # >0 = visible even inside a bush
         self.bush = None           # index of the bush you are standing in
         self.kos = 0
@@ -82,6 +90,10 @@ class Unit:
         s = self.base["speed"]
         if self.gloom_timer > 0:
             s *= 1.3
+        if self.haste_timer > 0:
+            s *= 1.25
+        if self.guard_timer > 0:
+            s *= 0.6
         if self.slow_timer > 0:
             s *= 0.55
         return s
@@ -168,6 +180,19 @@ class Strike:
         self.damage = damage
 
 
+class Projectile:
+    radius = 12
+
+    def __init__(self, owner, pos, vel, life, damage, drain=0):
+        self.owner = owner
+        self.pos = V(pos)
+        self.vel = V(vel)
+        self.life = life
+        self.damage = damage
+        self.drain = drain          # energy stolen from an enemy it hits
+        self.spin = 0.0
+
+
 class Puddle:
     def __init__(self, owner, pos, life, radius, dps):
         self.owner = owner
@@ -180,7 +205,7 @@ class Puddle:
 
 
 class Effect:
-    """A short visual: kind is 'zap', 'bolt', 'ring' or 'levelup'."""
+    """A short visual: 'zap', 'bolt', 'ring', 'levelup', 'vine', 'dash' or 'burst'."""
 
     def __init__(self, kind, pos, life, **extra):
         self.kind = kind

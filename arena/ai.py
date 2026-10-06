@@ -67,17 +67,22 @@ class Brain:
             self.retreating = True
         if self.retreating:
             walk_to(me.spawn, stop=40)
+            for key in ("q", "e"):              # a dash is a great way to escape
+                a = me.ability(key)
+                if a and a.escape and foe_dist < 300 and game.ability_ready(me, key):
+                    setattr(c, key, True)
+                    c.aim = me.pos + c.move if c.move.length_squared() else V(me.spawn)
             if me.hp > me.max_hp * 0.9:
                 self.retreating = False
             return c
 
-        # 2. abilities
-        q = me.ability("q")
-        if foe and q and foe_dist < q.range + 40 and game.ability_ready(me, "q"):
-            c.q, c.aim = True, foe.pos + foe_lead(foe)
-        e = me.ability("e")
-        if foe and e and foe_dist < 220 and game.ability_ready(me, "e"):
-            c.e = True
+        # 2. abilities: each move says when it's worth using (see abilities.py)
+        for key in ("q", "e"):
+            a = me.ability(key)
+            if a and game.ability_ready(me, key) and a.bot_wants(game, me, foe, foe_dist):
+                setattr(c, key, True)
+                if foe is not None:
+                    c.aim = foe.pos + foe_lead(foe)
 
         # 3. go score
         late = game.time_left < 25 and me.energy > 0
@@ -110,7 +115,9 @@ class Brain:
             self.wild_target = self.pick_wild(me, game)
         w = self.wild_target
         if w is not None:
-            if q and game.ability_ready(me, "q") and w.pos.distance_to(me.pos) < q.range and w.hp > 150:
+            q = me.ability("q")
+            if q and q.hits_wilds and game.ability_ready(me, "q") \
+                    and w.pos.distance_to(me.pos) < q.ai_max and w.hp > 150:
                 c.q, c.aim = True, V(w.pos)
             walk_to(w.pos, stop=me.attack_range * 0.7)
         else:

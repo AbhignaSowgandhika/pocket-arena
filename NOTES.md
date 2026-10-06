@@ -34,11 +34,17 @@ of the progress log.
 | Oct 5 | Glum is the only character, so for now every character is Glum | Bots will use any new characters you draw automatically. |
 | Oct 5 | Turned Glum's ability ideas into moves: Thunderbolt (Q) and Gloom Trail (E) | Taken from your description: thunderbolts from its cloud, and purple residue that slows. |
 | Oct 5 | Sunshine gives energy and Moonshine heals | Matches what you wrote for each creature. |
+| Oct 5 | Beat's moves: Heart Toss (steals energy) + Pulse Rush (dash) | From your idea: "throw hearts which break and drain energy, high speed". |
+| Oct 5 | Potas's moves: Vine Lash + Root Guard, plus a Camouflage passive | From your idea: "camouflage in the background, extend shoots to defend goals". Root Guard is built for standing in your own goal. |
+| Oct 5 | Each team gets one of each character (Red's order is random) | So every match has the full cast. |
+| Oct 5 | Sprite Studio saved in the repo with a file save/open option | Works offline too: double-click it, save a sprite file, drop it in `assets/sprites`. |
 
 ## Characters and creatures
 
 | Drawing | Type | In the game |
 |---|---|---|
+| **Beat** | Character, Attacker | 560 HP, 58 attack, longest reach. **Q Heart Toss:** a fast heart that breaks on the first thing it hits and steals up to 8 energy. **E Pulse Rush** (level 3): dash 260 px toward the cursor, then 25% faster for 2 s. Bots use it to escape too. |
+| **Potas** | Character, Defender | 900 HP, 36 attack. **Q Vine Lash:** a 320 px vine that hits everything in a line and slows it. **E Root Guard** (level 3): for 4 s takes 40% less damage and moves slower, and thorns hit enemies within 150 px twice a second. **Passive Camouflage:** after standing still 1.2 s, enemies can't see Potas unless they come close. |
 | **Glum** | Character, All-rounder | 700 HP, 46 attack. **Q Thunderbolt:** lightning lands at your mouse after 0.45s and hits everything in the circle. **E Gloom Trail** (level 3): 30% faster for 3.5s and drops puddles that slow enemies by 45% and slowly damage them. |
 | **Sunshine** | Wild creature | Gives 12 energy and 45 XP. Respawns after 18s. 11 camps on the map. |
 | **Moonshine** | Wild creature | Heals whoever defeats it by 40% of their max HP, plus 4 energy and 55 XP. Respawns after 24s. 2 camps, one near each base. |
@@ -76,6 +82,20 @@ tell Claude. Its role sets its stats; see `ROLE_STATS` in `arena/settings.py`.
   difficulty) and how it looks on your screen.
 
 ## Progress log
+
+### Mon, Oct 5 (evening) – v0.2
+* You drew **Beat** (Attacker) and **Potas** (Defender).
+* Gave each its own moves (see the table above). Bots know when to use every move.
+  Potas guards goals with Root Guard, and Beat dashes away when hurt.
+* Teams now have one Glum, one Beat and one Potas each. Pick yours with ← → on the start screen.
+  The start screen lists the chosen character's moves.
+* New visuals: flying hearts, growing vines, dash trails, and a thorn aura for Root Guard.
+  Camouflaged Potas shows see-through to you and is invisible to enemies.
+* Added **Arena Sprite Studio** to the repo (`studio/`) with **Save sprite file** and
+  **Open sprite file**, so it works without Claude too.
+* Testing: 6 bot-vs-bot matches came out even on average (328 to 326). Over 12 matches per
+  character: Beat scores the most (123 per game) but is defeated most often, Potas scores
+  the least (100) but is defeated least, and Glum is in between. That fits their roles.
 
 ### Mon, Oct 5 – v0.1
 * Started over. Moved the old version off the Desktop into `old_pocket_arena/`.

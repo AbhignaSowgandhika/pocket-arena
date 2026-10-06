@@ -18,7 +18,7 @@ import random
 from pygame.math import Vector2 as V
 
 from . import settings as S
-from .abilities import make_kit
+from .abilities import make_kit, PASSIVES
 from .ai import Brain
 from .entities import Unit, Wild, Orb, Puddle, Effect, FloatText, Controls
 from .world import World
@@ -43,23 +43,30 @@ class Game:
         self.units = []
         self.brains = {}
         self.wilds = [Wild(kind, pos) for kind, pos in self.world.wild_spots]
-        self.orbs, self.strikes, self.puddles = [], [], []
+        self.orbs, self.strikes, self.puddles, self.projectiles = [], [], [], []
         self.effects, self.texts = [], []
         self.feed = []                  # recent events for the kill feed: [text, color, age]
+
+        # Each team gets a mix of characters. Blue: your pick + the others.
+        others = [c for c in self.characters if c != self.player_sprite] or [self.player_sprite]
+        rosters = {
+            S.BLUE: [others[0], self.player_sprite, others[1 % len(others)]],
+            S.RED: random.sample(self.characters, len(self.characters))[:3],
+        }
+        while len(rosters[S.RED]) < 3:
+            rosters[S.RED].append(random.choice(self.characters))
 
         lanes = ["top", "bottom", "jungle"]
         for team in (S.BLUE, S.RED):
             base = self.world.bases[team]
             for i in range(3):
                 spawn = base + V(0, (i - 1) * 90)
-                if team == S.BLUE and i == 1:
-                    sprite_id, name, is_player = self.player_sprite, "You", True
-                else:
-                    sprite_id = random.choice(self.characters)
-                    is_player = False
-                    name = f"{S.TEAM_NAME[team]} {self.sprites[sprite_id]['name']}"
+                sprite_id = rosters[team][i]
+                is_player = team == S.BLUE and i == 1
+                name = "You" if is_player else f"{S.TEAM_NAME[team]} {self.sprites[sprite_id]['name']}"
                 role = self.sprites[sprite_id].get("role") or "All-rounder"
-                u = Unit(name, team, sprite_id, role, make_kit(sprite_id), spawn, is_player)
+                u = Unit(name, team, sprite_id, role, make_kit(sprite_id), spawn, is_player,
+                         passive=PASSIVES.get(sprite_id))
                 self.units.append(u)
                 if not is_player:
                     self.brains[u] = Brain(lanes[i])
@@ -70,14 +77,20 @@ class Game:
         return self.time_left <= S.FINAL_STRETCH
 
     # -------------------------------------------------------------- helpers --
+    def is_hidden(self, unit):
+        """Is this unit trying to hide (in a bush, or camouflaged)?"""
+        camouflaged = unit.passive == "camouflage" and unit.still_time >= S.CAMOUFLAGE_TIME
+        return (unit.bush is not None or camouflaged) and unit.reveal_timer <= 0
+
     def can_see(self, team, unit):
-        """Can `team` see `unit`? Units hiding in a bush are invisible to enemies
-        unless an enemy is close by or the hider just attacked."""
-        if unit.team == team or unit.bush is None or unit.reveal_timer > 0:
+        """Can `team` see `unit`? Hidden units are invisible to enemies unless an
+        enemy is close by, or in the same bush."""
+        if unit.team == team or not self.is_hidden(unit):
             return True
         for u in self.units:
             if u.team == team and u.alive:
-                if u.bush == unit.bush or u.pos.distance_to(unit.pos) < S.BUSH_REVEAL_DISTANCE:
+                if (unit.bush is not None and u.bush == unit.bush) or \
+                        u.pos.distance_to(unit.pos) < S.BUSH_REVEAL_DISTANCE:
                     return True
         return False
 
@@ -112,6 +125,7 @@ class Game:
         for w in self.wilds:
             self.tick_wild(w, dt)
         self.tick_strikes(dt)
+        self.tick_projectiles(dt)
         self.tick_puddles(dt)
         self.tick_orbs(dt)
         for item in self.effects + self.texts:
@@ -135,7 +149,17 @@ class Game:
         if c.score:
             self.start_scoring(u)
 
+        if u.dash_timer > 0:                 # dashing: the dash decides where you go
+            u.dash_timer -= dt
+            u.pos += u.dash_vel * dt
+            self.world.collide(u.pos, u.radius)
+            u.moving, u.still_time = True, 0.0
+            self.effects.append(Effect("dash", u.pos, 0.25, team=u.team))
+            u.bush = self.world.bush_at(u.pos)
+            return
+
         u.moving = c.move.length_squared() > 0.01
+        u.still_time = 0.0 if u.moving else u.still_time + dt
         if u.moving:
             u.cancel_scoring()
             direction = c.move.normalize()
@@ -169,7 +193,7 @@ class Game:
         for key in u.cooldowns:
             u.cooldowns[key] = max(0.0, u.cooldowns[key] - dt)
         u.attack_cd -= dt
-        for name in ("flash", "slow_timer", "reveal_timer"):
+        for name in ("flash", "slow_timer", "reveal_timer", "haste_timer"):
             setattr(u, name, max(0.0, getattr(u, name) - dt))
 
         # healing at base / in your own goals
@@ -187,6 +211,18 @@ class Game:
             if u.puddle_drop <= 0:
                 u.puddle_drop = 0.16
                 self.puddles.append(Puddle(u, u.pos, life=3.0, radius=42, dps=18 + 0.25 * u.atk))
+
+        # Root Guard: thorns hit nearby enemies twice a second
+        if u.guard_timer > 0:
+            u.guard_timer -= dt
+            u.guard_tick -= dt
+            if u.guard_tick <= 0:
+                u.guard_tick = 0.5
+                self.effects.append(Effect("burst", u.pos, 0.3, radius=150))
+                for e in self.enemies_of(u):
+                    if e.pos.distance_to(u.pos) <= 150 + e.radius:
+                        self.damage(e, 22 + 0.35 * u.atk, u)
+                        e.slow_timer = max(e.slow_timer, 0.6)
 
         # scoring progress
         if u.scoring_goal is not None:
@@ -227,6 +263,8 @@ class Game:
         """Hurt a unit or a wild creature. Handles defeats and rewards."""
         if not target.alive:
             return
+        if getattr(target, "guard_timer", 0) > 0:
+            amount *= 0.6                              # Root Guard blocks 40%
         amount = int(amount)
         target.hp -= amount
         target.flash = 0.12
@@ -239,6 +277,7 @@ class Game:
                 self.defeat_wild(target, source)
         else:
             target.cancel_scoring()
+            target.reveal_timer = max(target.reveal_timer, 0.5)   # getting hit gives you away
             if target.hp <= 0:
                 self.defeat_unit(target, source)
 
@@ -262,7 +301,7 @@ class Game:
         u.hp = 0
         u.dead_timer = S.RESPAWN_BASE + S.RESPAWN_PER_LEVEL * u.level
         u.cancel_scoring()
-        u.gloom_timer = 0
+        u.gloom_timer = u.guard_timer = u.dash_timer = u.haste_timer = 0
         drop = u.energy // 2 + 2
         u.energy = 0
         while drop > 0:
@@ -374,6 +413,33 @@ class Game:
                 if w.alive and w.pos.distance_to(s.pos) <= s.radius + w.radius:
                     self.damage(w, s.damage, s.owner)
         self.strikes = [s for s in self.strikes if s not in landed]
+
+    def tick_projectiles(self, dt):
+        for p in self.projectiles:
+            p.life -= dt
+            p.spin += dt
+            p.pos += p.vel * dt
+            if not self.world.clear_line(p.pos, p.pos, margin=0):
+                p.life = 0                                 # hit a wall
+                self.effects.append(Effect("ring", p.pos, 0.25, color=(255, 120, 150), radius=26))
+                continue
+            targets = [e for e in self.enemies_of(p.owner) if self.can_see(p.owner.team, e)]
+            targets += [w for w in self.wilds if w.alive]
+            for t in targets:
+                if t.pos.distance_to(p.pos) <= t.radius + p.radius:
+                    self.damage(t, p.damage, p.owner)
+                    if p.drain and isinstance(t, Unit) and t.energy > 0:
+                        stolen = min(p.drain, t.energy)
+                        t.energy -= stolen
+                        self.text(t.pos + V(0, -50), f"-{stolen}", S.ENERGY, size=22)
+                        if p.owner.alive:
+                            self.give_energy(p.owner, stolen, t.pos)
+                        else:
+                            self.orbs.append(Orb(t.pos, stolen))
+                    self.effects.append(Effect("ring", p.pos, 0.3, color=(255, 120, 150), radius=34))
+                    p.life = 0
+                    break
+        self.projectiles = [p for p in self.projectiles if p.life > 0]
 
     def tick_puddles(self, dt):
         for p in self.puddles:

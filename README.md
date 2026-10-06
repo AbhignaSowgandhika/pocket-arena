@@ -41,10 +41,19 @@ Each command is explained in [NOTES.md](NOTES.md#commands-explained).
 |---|---|
 | W A S D or arrow keys | Move |
 | *(automatic)* | Basic attack on the nearest enemy or wild creature |
-| Q | **Thunderbolt**: lightning strikes where your mouse is pointing |
-| E | **Gloom Trail**: speed up and leave puddles that slow enemies (from level 3) |
+| Q | Your character's first move, aimed with the mouse |
+| E | Your character's second move (unlocks at level 3) |
 | Space | Score your energy while standing in a red goal |
+| ← → (start screen) | Choose your character |
 | Esc | Pause |
+
+## Characters
+
+| | Role | Q | E (level 3) | Extra |
+|---|---|---|---|---|
+| **Glum** | All-rounder | **Thunderbolt:** lightning strikes at your cursor | **Gloom Trail:** speed up and leave slowing purple puddles | |
+| **Beat** | Attacker | **Heart Toss:** a heart that breaks on hit and steals 8 energy | **Pulse Rush:** dash, then move faster for 2 s | Fastest, but fragile |
+| **Potas** | Defender | **Vine Lash:** a vine in a straight line that hits and slows | **Root Guard:** take 40% less damage and thorns hurt nearby enemies | **Camouflage:** stand still to turn invisible |
 
 ## How to play
 
@@ -74,6 +83,7 @@ arena/
   render.py          drawing everything, including the HUD
   sprites.py         turns the drawings into images
 assets/sprites/      the drawings from Arena Sprite Studio (as text)
+studio/              Arena Sprite Studio itself: open sprite_studio.html to draw
 tools/
   simulate.py        play many matches with no window (balance testing)
   screenshots.py     play one match with no window and save pictures

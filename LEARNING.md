@@ -238,3 +238,25 @@ effect. You can undo any change with `git checkout -- <file>`.
    Bots will hold more energy before scoring.
 5. **Read a decision:** in `ai.py`, add `print(me.name, "is retreating")` inside
    the retreat rule. Run the game and watch Terminal.
+
+---
+
+## 12. How the three characters' moves work (v0.2)
+
+| Move | Idea in code |
+|---|---|
+| **Heart Toss** (Beat) | Creates a `Projectile` with a velocity. Each frame, `tick_projectiles` moves it and checks whether it touches anything (distance < sum of radii). On a hit it does damage, moves energy from the target to Beat, and disappears. |
+| **Pulse Rush** (Beat) | Sets `dash_timer` and `dash_vel`. While the timer is above 0, `apply_controls` ignores your keys and moves you along `dash_vel`. This is a tiny **state machine**: "dashing" and "normal" states. |
+| **Vine Lash** (Potas) | Hits instantly along a line. `distance_to_segment` works out how close each target is to the line from Potas to the vine's tip. |
+| **Root Guard** (Potas) | Sets `guard_timer`. Three other places react to it: `damage()` reduces damage by 40%, `Unit.speed` slows Potas down, and `tick_unit` pulses thorn damage every 0.5 s. |
+| **Camouflage** (Potas) | `still_time` counts how long Potas hasn't moved. `game.is_hidden()` treats "still for 1.2 s" like standing in a bush, so `can_see()` (section 8) hides it from enemies with no extra code. |
+
+Notice how much each new move reuses: timers counting down with `dt`, distance
+checks, and `can_see`. Most game features are combinations of a few simple
+ideas like these.
+
+### How bots decide when to use a move
+Each ability class has a `bot_wants(game, me, foe, foe_dist)` method. By
+default it means "an enemy is between `ai_min` and `ai_max` pixels away". Root
+Guard **overrides** it to also fire when an enemy is scoring in Potas's goal.
+That's inheritance again: same method name, a special version for one class.

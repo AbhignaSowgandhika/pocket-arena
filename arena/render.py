@@ -252,6 +252,8 @@ class Renderer:
         for u in game.units:
             if u.alive and game.can_see(game.player.team, u):
                 items.append((u.pos.y, "unit", u))
+        for p in game.projectiles:
+            items.append((p.pos.y + 30, "heart", p))
         items.sort(key=lambda t: t[0])
         for _, kind, obj in items:
             if not self.on_screen(obj.pos):
@@ -260,6 +262,8 @@ class Renderer:
                 self.draw_orb(obj)
             elif kind == "wild":
                 self.draw_wild(obj)
+            elif kind == "heart":
+                self.draw_heart(self.to_screen(obj.pos), 13 + 2 * math.sin(obj.spin * 20), lift=26)
             else:
                 self.draw_unit(game, obj)
 
@@ -269,6 +273,21 @@ class Renderer:
         pygame.draw.circle(self.screen, S.ENERGY_DARK, (c[0], c[1] + 3), 10)
         pygame.draw.circle(self.screen, S.ENERGY, c, int(9 + pulse))
         pygame.draw.circle(self.screen, (255, 250, 220), (c[0] - 3, c[1] - 3), 3)
+
+    def draw_heart(self, c, size, lift=0, color=(232, 64, 98), surface=None):
+        """A heart shape: two circles on top of an upside-down triangle."""
+        surface = surface or self.screen
+        x, y = c[0], c[1] - lift
+        r = size * 0.55
+        if lift:
+            self.shadow((x, c[1]), int(size * 2), 8)
+        for dx in (-r * 0.9, r * 0.9):
+            pygame.draw.circle(surface, (40, 10, 20), (int(x + dx), int(y - r * 0.3)), int(r) + 2)
+        pygame.draw.polygon(surface, (40, 10, 20), [(x - size - 2, y), (x + size + 2, y), (x, y + size * 1.25 + 3)])
+        for dx in (-r * 0.9, r * 0.9):
+            pygame.draw.circle(surface, color, (int(x + dx), int(y - r * 0.3)), int(r))
+        pygame.draw.polygon(surface, color, [(x - size, y), (x + size, y), (x, y + size * 1.25)])
+        pygame.draw.circle(surface, (255, 200, 210), (int(x - r), int(y - r * 0.6)), max(2, int(r * 0.35)))
 
     def shadow(self, c, w, h=12):
         s = pygame.Surface((w, h), pygame.SRCALPHA)
@@ -310,7 +329,15 @@ class Renderer:
         pygame.draw.ellipse(self.screen, ring, (c[0] - 36, c[1] + 3, 72, 26), 3)
         if u.gloom_timer > 0:
             pygame.draw.ellipse(self.screen, S.GLOOM, (c[0] - 41, c[1], 82, 32), 3)
-        alpha = 150 if u.bush is not None else 255
+        if u.guard_timer > 0:
+            aura = pygame.Surface((300, 300), pygame.SRCALPHA)
+            pygame.draw.circle(aura, (90, 170, 70, 45), (150, 150), 150)
+            for i in range(10):                      # spinning thorns
+                a = self.clock * 1.5 + i * math.tau / 10
+                p = (150 + math.cos(a) * 140, 150 + math.sin(a) * 140)
+                pygame.draw.circle(aura, (40, 110, 40, 220), (int(p[0]), int(p[1])), 7)
+            self.screen.blit(aura, (c[0] - 150, c[1] - 150))
+        alpha = 150 if game.is_hidden(u) or u.bush is not None else 255
         self.tops[id(u)] = self.blit_sprite(u.sprite_id, (c[0], c[1] + 16), flip=u.facing_left,
                                   flash=u.flash > 0, alpha=alpha, bob=bob)
         if u.slow_timer > 0:
@@ -345,6 +372,24 @@ class Renderer:
             elif e.kind == "ring":
                 r = int(e.extra["radius"] * (1.4 - 0.6 * k))
                 pygame.draw.circle(self.screen, e.extra["color"], c, r, max(1, int(6 * k)))
+            elif e.kind == "vine":
+                end = self.to_screen(e.extra["to"])
+                grow = min(1.0, (1 - k) * 4)          # shoots out quickly, then fades
+                tip = (c[0] + (end[0] - c[0]) * grow, c[1] + (end[1] - c[1]) * grow)
+                pygame.draw.line(self.screen, (20, 70, 30), c, tip, 16)
+                pygame.draw.line(self.screen, (120, 200, 90), c, tip, 8)
+                for i in range(1, 7):
+                    t = i / 7 * grow
+                    px, py = c[0] + (end[0] - c[0]) * t, c[1] + (end[1] - c[1]) * t
+                    side = 12 if i % 2 else -12
+                    pygame.draw.ellipse(self.screen, (90, 180, 70), (px - 8 + side * 0.6, py - 6 - abs(side) * 0.3, 16, 10))
+            elif e.kind == "dash":
+                s = pygame.Surface((60, 60), pygame.SRCALPHA)
+                pygame.draw.circle(s, (*S.TEAM_COLOR[e.extra["team"]], int(120 * k)), (30, 30), 24)
+                self.screen.blit(s, (c[0] - 30, c[1] - 40))
+            elif e.kind == "burst":
+                r = int(e.extra["radius"] * (1.05 - 0.25 * k))
+                pygame.draw.circle(self.screen, (120, 200, 90), c, r, max(1, int(5 * k)))
             elif e.kind == "levelup":
                 r = int(30 + 40 * (1 - k))
                 pygame.draw.circle(self.screen, S.HEAL_GREEN, (c[0], c[1] + 8), r, max(1, int(5 * k)))
@@ -544,6 +589,22 @@ class Renderer:
                 pygame.draw.circle(self.screen, S.GLOOM, (x + dx, y + dy), r)
                 pygame.draw.circle(self.screen, (180, 130, 235), (x + dx - r // 3, y + dy - r // 3), max(2, r // 4))
             pygame.draw.line(self.screen, S.WHITE, (x - 22, y + 22), (x + 22, y + 22), 2)
+        elif name == "heart":
+            self.draw_heart((x, y - 2), 17)
+        elif name == "dash":
+            for i, col in enumerate(((255, 160, 180), (240, 90, 120), (232, 64, 98))):
+                ox = -14 + i * 12
+                pygame.draw.polygon(self.screen, col, [(x + ox - 6, y - 14), (x + ox + 8, y), (x + ox - 6, y + 14)])
+        elif name == "vine":
+            pts = [(x - 24, y + 18), (x - 10, y + 4), (x + 2, y + 8), (x + 22, y - 18)]
+            pygame.draw.lines(self.screen, (120, 200, 90), False, pts, 6)
+            for px, py in pts[1:]:
+                pygame.draw.ellipse(self.screen, (90, 180, 70), (px - 7, py - 12, 14, 9))
+        elif name == "guard":
+            shield = [(x, y - 22), (x + 18, y - 14), (x + 15, y + 8), (x, y + 22), (x - 15, y + 8), (x - 18, y - 14)]
+            pygame.draw.polygon(self.screen, (60, 130, 60), shield)
+            pygame.draw.polygon(self.screen, (150, 220, 120), shield, 3)
+            pygame.draw.line(self.screen, (150, 220, 120), (x, y - 14), (x, y + 14), 3)
         else:
             pygame.draw.circle(self.screen, S.WHITE, c, 14, 3)
 
@@ -568,6 +629,8 @@ class Renderer:
             msg, color = "Energy full! Take it to a red goal", S.ENERGY
         elif u.bush is not None:
             msg, color = "Hidden in the grass", (170, 230, 170)
+        elif game.is_hidden(u):
+            msg, color = "Camouflaged - enemies can't see you", (170, 230, 170)
         if msg:
             img = self.text_surface(msg, 20, color)
             r = img.get_rect(center=(SCREEN_W // 2, SCREEN_H - 150))
@@ -582,7 +645,7 @@ class Renderer:
 
     def draw_intro(self, game):
         self.dim(190)
-        card = self.panel((SCREEN_W // 2 - 360, 70, 720, 560), alpha=245, radius=18)
+        card = self.panel((SCREEN_W // 2 - 420, 60, 840, 590), alpha=245, radius=18)
         cx = card.centerx
         self.text("POCKET ARENA", (cx, card.y + 46), 44, S.WHITE)
         self.text("Collect energy. Score it in the red goals. Most points in 5 minutes wins.",
@@ -603,18 +666,21 @@ class Renderer:
             self.text("Left / Right arrows: choose character", (cx, stage.bottom + 70), 13, MUTED, shadow=False)
 
         # controls
-        rows = [("W A S D", "Move"),
-                ("Q", "Thunderbolt: aim with the mouse"),
-                ("E", "Gloom Trail: speed up + slowing puddles (Level 3)"),
-                ("SPACE", "Score energy while standing in a red goal"),
-                ("Auto", "Basic attacks hit whatever is closest"),
-                ("Esc", "Pause")]
+        kit = game.player.kit
+        rows = [("W A S D", "Move  -  basic attacks happen automatically")]
+        for a in kit:
+            lock = f" (Level {a.unlock})" if a.unlock > 1 else ""
+            rows.append((a.key.upper(), f"{a.name}{lock}: {a.blurb}"))
+        if game.player.passive == "camouflage":
+            rows.append(("Passive", "Camouflage: stand still to vanish from enemies"))
+        rows += [("SPACE", "Score energy while standing in a red goal"), ("Esc", "Pause")]
         y = card.y + 372
         for key, what in rows:
-            kw = max(70, self.text_surface(key, 15, PANEL).get_width() + 16)
-            pygame.draw.rect(self.screen, S.WHITE, (cx - 250, y - 11, kw, 22), border_radius=5)
-            self.text(key, (cx - 250 + kw // 2, y), 15, PANEL, shadow=False)
-            self.text(what, (cx - 250 + kw + 14, y), 16, S.WHITE, anchor="midleft", shadow=False)
+            kw = 78
+            left = cx - 380
+            pygame.draw.rect(self.screen, S.WHITE, (left, y - 11, kw, 22), border_radius=5)
+            self.text(key, (left + kw // 2, y), 14, PANEL, shadow=False)
+            self.text(what, (left + kw + 14, y), 15, S.WHITE, anchor="midleft", shadow=False)
             y += 28
         pulse = 200 + int(55 * math.sin(self.clock * 4))
         self.text("Press ENTER to start", (cx, card.bottom - 22), 22, (pulse, pulse, 120))
