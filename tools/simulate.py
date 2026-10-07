@@ -26,7 +26,9 @@ def play_match(seed, dt=1 / 30):
     game.state = "playing"
     pilot = Brain("bottom")              # a bot that plays for "You"
     while game.state == "playing":
-        game.update(dt, pilot.update(game.player, game, dt))
+        c = pilot.update(game.player, game, dt)
+        c.aim = None                     # aim like a real player: let the game auto-target
+        game.update(dt, c)
     return game
 
 

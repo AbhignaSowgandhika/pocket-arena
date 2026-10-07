@@ -15,8 +15,10 @@ TITLE = "Pocket Arena"
 WORLD_W, WORLD_H = 2800, 1600
 
 # ----- match rules ------------------------------------------------------------
-MATCH_SECONDS = 5 * 60
-FINAL_STRETCH = 60          # last N seconds: every point counts double
+MATCH_SECONDS = 4 * 60
+FINAL_STRETCH = 45          # last N seconds: every point counts double
+AIM_WITH_MOUSE = False      # False: moves auto-target the nearest enemy (like Unite)
+                            # True: moves fly toward the mouse pointer
 MAX_ENERGY = 50             # most energy one character can carry
 MAX_LEVEL = 10
 SPRITE_SCALE = 3            # 32px drawings are shown at 96px
@@ -55,8 +57,8 @@ WILD_STATS = {
 
 # ----- goals ------------------------------------------------------------------
 GOAL_RADIUS = 78
-OUTER_GOAL_POINTS = 80       # an outer goal breaks after taking this many points
-INNER_GOAL_POINTS = 120      # the inner goal opens once an outer goal breaks
+OUTER_GOAL_POINTS = 70       # an outer goal breaks after taking this many points
+INNER_GOAL_POINTS = 100      # the inner goal opens once an outer goal breaks
 SCORE_BASE_TIME = 0.5        # seconds to score...
 SCORE_TIME_PER_ENERGY = 0.04  # ...plus this much per energy carried (50 -> 2.5 s)
 

@@ -62,6 +62,7 @@ class Unit:
         self.score_progress = 0.0
         self.score_time = 1.0
         self.facing_left = team == 1
+        self.move_dir = V(-1 if team == 1 else 1, 0)   # last direction walked
         self.moving = False
         self.walk_time = 0.0
         self.flash = 0.0           # >0 right after taking damage

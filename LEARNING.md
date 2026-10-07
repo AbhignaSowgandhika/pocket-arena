@@ -260,3 +260,26 @@ Each ability class has a `bot_wants(game, me, foe, foe_dist)` method. By
 default it means "an enemy is between `ai_min` and `ai_max` pixels away". Root
 Guard **overrides** it to also fire when an enemy is scoring in Potas's goal.
 That's inheritance again: same method name, a special version for one class.
+
+---
+
+## 13. Lesson from playtest 1: test the way people play
+
+The moves first aimed at the mouse pointer. In my tests the bots passed exact
+target positions, so every test hit. You use the keyboard, so your pointer
+sat in one spot and every move flew that way.
+
+Two changes:
+
+* **Auto-aim:** `Game.auto_aim()` picks the nearest enemy you can see, then
+  the nearest wild creature, and otherwise returns `None`, which means "the way
+  you're walking". `Game.cast()` calls it whenever a move gets no aim. The red
+  ring on screen (`Renderer.draw_target`) uses the same function, so what you
+  see is exactly what will be hit.
+* **A test that plays like you:** `tools/test_moves.py` presses Q with no aim
+  while an enemy stands left, right, above or below, and checks that the enemy
+  lost health. If any check fails, the script exits with an error code and
+  GitHub marks the push with a red ✗.
+
+This is a **regression test**: once a bug is fixed, a test makes sure it never
+comes back unnoticed.

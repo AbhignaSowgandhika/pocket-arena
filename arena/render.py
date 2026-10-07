@@ -166,6 +166,7 @@ class Renderer:
         self.draw_things(game)
         self.draw_effects(game)
         self.draw_overheads(game)
+        self.draw_target(game)
         self.draw_hud(game)
 
         if game.state == "intro":
@@ -434,6 +435,24 @@ class Renderer:
                 self.bar(c[0] - 34, c[1] + 34, 68, 8, u.score_progress / u.score_time, S.ENERGY, back=PANEL)
 
     # ---------------------------------------------------------------- HUD --
+    def draw_target(self, game):
+        """A spinning ring on whatever your Q move would hit right now."""
+        me = game.player
+        q = me.ability("q")
+        if game.state != "playing" or not me.alive or q is None or S.AIM_WITH_MOUSE:
+            return
+        aim = game.auto_aim(me, q.ai_max)
+        if aim is None:
+            return
+        c = self.to_screen(aim)
+        ready = game.ability_ready(me, "q")
+        color = (255, 90, 90) if ready else (150, 150, 160)
+        r = 34
+        for i in range(4):                       # four corner brackets
+            a = self.clock * 2 + i * math.pi / 2
+            rect = pygame.Rect(c[0] - r, c[1] - r - 6, 2 * r, 2 * r)
+            pygame.draw.arc(self.screen, color, rect, a, a + 0.8, 3)
+
     def draw_hud(self, game):
         self.draw_scoreboard(game)
         self.draw_feed(game)
@@ -648,7 +667,7 @@ class Renderer:
         card = self.panel((SCREEN_W // 2 - 420, 60, 840, 590), alpha=245, radius=18)
         cx = card.centerx
         self.text("POCKET ARENA", (cx, card.y + 46), 44, S.WHITE)
-        self.text("Collect energy. Score it in the red goals. Most points in 5 minutes wins.",
+        self.text(f"Collect energy. Score it in the red goals. Most points in {S.MATCH_SECONDS // 60} minutes wins.",
                   (cx, card.y + 88), 17, MUTED, shadow=False)
 
         # character picker

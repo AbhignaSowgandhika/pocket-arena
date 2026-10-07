@@ -14,7 +14,7 @@ of the progress log.
 | Day | You | Claude |
 |---|---|---|
 | **Mon, Oct 5** | Draw characters and creatures in Arena Sprite Studio ✅ | Set up repo, notes and v0.1 of the game ✅ |
-| **Tue, Oct 6** | First playtest on your Mac, then tell Claude what feels off. Draw 1–2 more characters if you like. | Fix playtest issues. Add the new characters. |
+| **Tue, Oct 6** | First playtest on your Mac ✅, then tell Claude what feels off. Draw 1–2 more characters if you like. | Fix playtest issues. Add the new characters. |
 | **Wed, Oct 7** | Second playtest | Per-character abilities, an ultimate move, smarter bots, sound effects (optional) |
 | **Thu, Oct 8** | Final playtest | Polish, balance, final notes |
 
@@ -36,6 +36,8 @@ of the progress log.
 | Oct 5 | Sunshine gives energy and Moonshine heals | Matches what you wrote for each creature. |
 | Oct 5 | Beat's moves: Heart Toss (steals energy) + Pulse Rush (dash) | From your idea: "throw hearts which break and drain energy, high speed". |
 | Oct 5 | Potas's moves: Vine Lash + Root Guard, plus a Camouflage passive | From your idea: "camouflage in the background, extend shoots to defend goals". Root Guard is built for standing in your own goal. |
+| Oct 6 | Moves auto-target instead of following the mouse | Matches Unite, and the mouse made moves fire the wrong way in playtest 1. |
+| Oct 6 | 4-minute matches | Playtest 1: 5 minutes felt a little long. |
 | Oct 5 | Each team gets one of each character (Red's order is random) | So every match has the full cast. |
 | Oct 5 | Sprite Studio saved in the repo with a file save/open option | Works offline too: double-click it, save a sprite file, drop it in `assets/sprites`. |
 
@@ -43,9 +45,9 @@ of the progress log.
 
 | Drawing | Type | In the game |
 |---|---|---|
-| **Beat** | Character, Attacker | 560 HP, 56 attack, longest reach and fastest walker (192 vs 180 for Glum). **Q Heart Toss:** a fast heart that breaks on the first thing it hits and steals up to 8 energy. **E Pulse Rush** (level 3): dash 260 px toward the cursor, then 25% faster for 2 s. Bots use it to escape too. |
+| **Beat** | Character, Attacker | 560 HP, 56 attack, longest reach and fastest walker (192 vs 180 for Glum). **Q Heart Toss:** a fast heart that breaks on the first thing it hits and steals up to 8 energy. **E Pulse Rush** (level 3): dash 260 px the way you're walking, then 25% faster for 2 s. Bots use it to escape too. |
 | **Potas** | Character, Defender | 900 HP, 42 attack. **Q Vine Lash:** a 320 px vine that hits everything in a line and slows it. **E Root Guard** (level 3): for 4 s takes 40% less damage and moves slower, and thorns hit enemies within 150 px twice a second. **Passive Camouflage:** after standing still 1.2 s, enemies can't see Potas unless they come close. |
-| **Glum** | Character, All-rounder | 700 HP, 46 attack. **Q Thunderbolt:** lightning lands at your mouse after 0.45s and hits everything in the circle. **E Gloom Trail** (level 3): 30% faster for 3.5s and drops puddles that slow enemies by 45% and slowly damage them. |
+| **Glum** | Character, All-rounder | 700 HP, 46 attack. **Q Thunderbolt:** lightning lands on the nearest enemy's spot after 0.45s and hits everything in the circle. **E Gloom Trail** (level 3): 30% faster for 3.5s and drops puddles that slow enemies by 45% and slowly damage them. |
 | **Sunshine** | Wild creature | Gives 12 energy and 45 XP. Respawns after 18s. 11 camps on the map. |
 | **Moonshine** | Wild creature | Heals whoever defeats it by 40% of their max HP, plus 4 energy and 55 XP. Respawns after 24s. 2 camps, one near each base. |
 
@@ -84,6 +86,23 @@ tell Claude. Its role sets its stats; see `ROLE_STATS` in `arena/settings.py`.
 ## Progress log
 
 ### Tue, Oct 6
+* **Playtest 1 (you, 3 matches):** you won only as Beat, the match felt a little long, and
+  moves fired the wrong way. A heart flew left at an enemy on the right, and Potas's vine
+  only went one direction.
+  * **Cause:** moves aimed at the mouse pointer. If the pointer sat to one side (or outside
+    the window), every move went that way. My tests missed it because the test bots aim
+    straight at their target and never use a mouse.
+  * **Fix:** moves now **auto-target** like in Unite. Q aims at the nearest enemy you can see,
+    then the nearest wild creature, and otherwise the way you're walking. A red ring shows
+    what Q will hit. Pulse Rush dashes the way you're walking so it still works for escaping.
+    Mouse aim can be switched back on with `AIM_WITH_MOUSE` in settings.
+  * **New test** `tools/test_moves.py` fires every character's moves at enemies on all four
+    sides without a mouse. It runs on GitHub with every push. All 14 checks pass.
+  * The test simulations now aim like a real player (auto-target) instead of aiming perfectly.
+* **Shorter match:** 4 minutes instead of 5. The final stretch (double points) is 45 s.
+  Goals break sooner (70 points outer, 100 inner) so matches still reach the inner goals.
+* **Balance with you playing:** a bot in your slot using auto-aim won 4 of 8 matches as each
+  character. Beat was likely winning before because its basic attack and dash don't need aiming.
 * First setup on your Mac: `pip install -r requirements.txt` said the file was missing.
   The file is on GitHub, so the local folder was an outdated copy. Added a
   Troubleshooting section to the README.

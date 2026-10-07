@@ -6,7 +6,7 @@ drawings made in **Arena Sprite Studio**.
 
 You and two bot teammates (Blue) take on three bot rivals (Red). Defeat wild
 creatures to collect energy, carry it to a red goal and score. The team with the
-most points after 5 minutes wins.
+most points after 4 minutes wins.
 
 ## Run it on a Mac
 
@@ -61,18 +61,20 @@ installs for your account only.
 |---|---|
 | W A S D or arrow keys | Move |
 | *(automatic)* | Basic attack on the nearest enemy or wild creature |
-| Q | Your character's first move, aimed with the mouse |
+| Q | Your character's first move. It aims itself at the nearest enemy (a red ring shows who) |
 | E | Your character's second move (unlocks at level 3) |
 | Space | Score your energy while standing in a red goal |
 | ← → (start screen) | Choose your character |
 | Esc | Pause |
 
+Prefer aiming with the mouse? Set `AIM_WITH_MOUSE = True` in `arena/settings.py`.
+
 ## Characters
 
 | | Role | Q | E (level 3) | Extra |
 |---|---|---|---|---|
-| **Glum** | All-rounder | **Thunderbolt:** lightning strikes at your cursor | **Gloom Trail:** speed up and leave slowing purple puddles | |
-| **Beat** | Attacker | **Heart Toss:** a heart that breaks on hit and steals 8 energy | **Pulse Rush:** dash, then move faster for 2 s | Fastest, but fragile |
+| **Glum** | All-rounder | **Thunderbolt:** lightning strikes the nearest enemy | **Gloom Trail:** speed up and leave slowing purple puddles | |
+| **Beat** | Attacker | **Heart Toss:** a heart that breaks on hit and steals 8 energy | **Pulse Rush:** dash the way you're walking, then move faster for 2 s | Fastest, but fragile |
 | **Potas** | Defender | **Vine Lash:** a vine in a straight line that hits and slows | **Root Guard:** take 40% less damage and thorns hurt nearby enemies | **Camouflage:** stand still to turn invisible |
 
 ## How to play
@@ -81,13 +83,13 @@ installs for your account only.
   creatures to heal (+40% HP). You can carry up to 50.
 * **Scoring:** Stand in a red goal and press Space. Scoring takes longer the more
   energy you carry, and taking damage or moving cancels it.
-* **Goals:** Each goal breaks after taking 80 points. The inner goal near the base
+* **Goals:** Each goal breaks after taking 70 points (inner goals: 100). The inner goal near the base
   is locked until one of that team's outer goals breaks.
 * **Bushes:** Hide in the tall grass. Enemies can't see you unless they come close
   or you attack.
 * **Knockouts:** If you're defeated you drop half your energy, and you respawn at
   your base after a few seconds.
-* **Final stretch:** Points count double in the last minute.
+* **Final stretch:** Points count double in the last 45 seconds.
 
 ## Project layout
 
@@ -105,6 +107,7 @@ arena/
 assets/sprites/      the drawings from Arena Sprite Studio (as text)
 studio/              Arena Sprite Studio itself: open sprite_studio.html to draw
 tools/
+  test_moves.py      checks every move hits in every direction
   simulate.py        play many matches with no window (balance testing)
   screenshots.py     play one match with no window and save pictures
 ```

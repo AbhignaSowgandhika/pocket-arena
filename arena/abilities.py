@@ -20,10 +20,10 @@ from .entities import Strike, Projectile, Effect
 
 
 def aim_direction(unit, aim):
-    """A length-1 arrow from the unit toward `aim` (or the way it faces)."""
+    """A length-1 arrow from the unit toward `aim`, or the way it last walked."""
     if aim is not None and (V(aim) - unit.pos).length_squared() > 1:
         return (V(aim) - unit.pos).normalize()
-    return V(-1 if unit.facing_left else 1, 0)
+    return V(unit.move_dir)
 
 
 class Ability:
@@ -36,6 +36,7 @@ class Ability:
     ai_min, ai_max = 0, 300     # bots use it when an enemy is this far away
     hits_wilds = False          # bots may also use it on wild creatures
     escape = False              # bots may use it to run away
+    auto_target = True          # with no aim given, aim at the nearest enemy
 
     def cast(self, game, unit, aim):
         raise NotImplementedError
@@ -51,7 +52,7 @@ class Thunderbolt(Ability):
     name = "Thunderbolt"
     cooldown = 6.0
     icon = "bolt"
-    blurb = "Lightning strikes near your cursor after a short delay."
+    blurb = "Lightning strikes the nearest enemy's spot after a short delay."
     range = 420
     radius = 90
     delay = 0.45
@@ -59,7 +60,7 @@ class Thunderbolt(Ability):
     hits_wilds = True
 
     def cast(self, game, unit, aim):
-        offset = aim_direction(unit, aim) * 200 if aim is None else V(aim) - unit.pos
+        offset = aim_direction(unit, aim) * 220 if aim is None else V(aim) - unit.pos
         if offset.length() > self.range:          # can't strike further than `range`
             offset.scale_to_length(self.range)
         damage = 80 + 1.4 * unit.atk
@@ -114,11 +115,12 @@ class PulseRush(Ability):
     cooldown = 8.0
     unlock = 3
     icon = "dash"
-    blurb = "Dash toward your cursor, then move 25% faster for 2 seconds."
+    blurb = "Dash the way you're walking, then move 25% faster for 2 seconds."
     distance = 260
     time = 0.2
     ai_min, ai_max = 170, 420
     escape = True
+    auto_target = False         # you dash the way you're walking, so it can also escape
 
     def cast(self, game, unit, aim):
         direction = aim_direction(unit, aim)

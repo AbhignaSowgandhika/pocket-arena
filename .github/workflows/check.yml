@@ -19,6 +19,8 @@ jobs:
           python-version: "3.11"
       - name: Install pygame
         run: pip install -r requirements.txt
+      - name: Check every move hits in every direction
+        run: python tools/test_moves.py
       - name: Simulate 4 matches (rules only)
         run: python tools/simulate.py 4
       - name: Play a match and take screenshots

@@ -32,8 +32,10 @@ def read_controls(keys, pressed, renderer):
         move.y -= 1
     if keys[pygame.K_s] or keys[pygame.K_DOWN]:
         move.y += 1
-    mouse_on_map = V(pygame.mouse.get_pos()) + renderer.camera
-    return Controls(move=move, aim=mouse_on_map,
+    aim = None                              # None = the game auto-targets
+    if S.AIM_WITH_MOUSE:
+        aim = V(pygame.mouse.get_pos()) + renderer.camera
+    return Controls(move=move, aim=aim,
                     q=pygame.K_q in pressed,
                     e=pygame.K_e in pressed,
                     score=pygame.K_SPACE in pressed)

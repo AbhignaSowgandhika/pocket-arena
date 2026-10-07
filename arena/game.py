@@ -163,6 +163,7 @@ class Game:
         if u.moving:
             u.cancel_scoring()
             direction = c.move.normalize()
+            u.move_dir = V(direction)
             if abs(direction.x) > 0.2:
                 u.facing_left = direction.x < 0
             u.pos += direction * u.speed * dt
@@ -174,10 +175,26 @@ class Game:
         if not self.ability_ready(u, key):
             return
         ability = u.ability(key)
+        if aim is None and ability.auto_target:
+            aim = self.auto_aim(u, ability.ai_max)
         if ability.cast(self, u, aim):
             u.cooldowns[key] = ability.cooldown
             u.cancel_scoring()
             u.reveal_timer = S.REVEAL_AFTER_ATTACK
+
+    def auto_aim(self, u, reach):
+        """Where to aim when you don't aim yourself: the nearest enemy you can
+        see, otherwise the nearest wild creature, otherwise straight ahead (None)."""
+        enemies = [e for e in self.enemies_of(u)
+                   if self.can_see(u.team, e) and e.pos.distance_to(u.pos) <= reach + 60]
+        if enemies:
+            target = min(enemies, key=lambda e: e.pos.distance_to(u.pos))
+            lead = target.move_dir * 30 if target.moving else V()   # aim a bit ahead
+            return target.pos + lead
+        wilds = [w for w in self.wilds if w.alive and w.pos.distance_to(u.pos) <= reach + 60]
+        if wilds:
+            return V(min(wilds, key=lambda w: w.pos.distance_to(u.pos)).pos)
+        return None
 
     # ---------------------------------------------------------------- units --
     def tick_unit(self, u, dt):
