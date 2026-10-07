@@ -83,6 +83,11 @@ tell Claude. Its role sets its stats; see `ROLE_STATS` in `arena/settings.py`.
 
 ## Progress log
 
+### Tue, Oct 6
+* First setup on your Mac: `pip install -r requirements.txt` said the file was missing.
+  The file is on GitHub, so the local folder was an outdated copy. Added a
+  Troubleshooting section to the README.
+
 ### Mon, Oct 5 (evening) – v0.2
 * You drew **Beat** (Attacker) and **Potas** (Defender).
 * Gave each its own moves (see the table above). Bots know when to use every move.

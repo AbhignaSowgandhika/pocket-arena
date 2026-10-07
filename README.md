@@ -35,6 +35,26 @@ git pull
 
 Each command is explained in [NOTES.md](NOTES.md#commands-explained).
 
+### Troubleshooting
+
+**`Could not open requirements file: requirements.txt`**: your folder is
+missing the latest files. Check with:
+
+```bash
+cd ~/Desktop/pocket-arena
+ls                      # should list main.py, requirements.txt, arena, assets ...
+git log --oneline -1    # should match the latest commit on GitHub
+```
+
+If `ls` shows only `README.md`, the folder was cloned before the game was
+added. Run `git pull`. If `git pull` reports an error, delete the folder and
+clone it again with the setup steps above.
+
+**`WARNING: You are using pip version ...`**: this is safe to ignore.
+
+**`Defaulting to user installation`**: this is normal on a Mac. pygame
+installs for your account only.
+
 ## Controls
 
 | Key | Action |
